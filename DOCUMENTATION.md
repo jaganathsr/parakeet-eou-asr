@@ -187,9 +187,10 @@ The Docker container is built on `nvcr.io/nvidia/pytorch:24.01-py3` (CUDA 12.3, 
 **Build stages:**
 
 1. **System libraries** — installs `libsndfile1`, `ffmpeg`, and `sox` for audio processing.
-2. **Python dependencies** — installs NeMo ASR toolkit, Flask, gunicorn, soundfile, and explicitly reinstalls `torchvision` and `torchaudio` to ensure version compatibility with whatever PyTorch version NeMo resolves.
-3. **Model pre-download** — runs `ASRModel.from_pretrained()` during the build to cache the model weights inside the image. This avoids a HuggingFace download on every container startup, making deployments faster and more reliable.
-4. **Handler copy** — copies `handler.py` into the image.
+2. **NeMo + core deps** — installs `nemo_toolkit[asr]`, Flask, gunicorn, and soundfile. NeMo pins its own PyTorch version (e.g. 2.10.0+cu128).
+3. **torchvision + torchaudio** — installed in a **separate step after NeMo** so pip resolves versions that match the PyTorch NeMo brought in. Installing them in the same command as NeMo can leave stale binaries that fail with `RuntimeError: operator torchvision::nms does not exist`.
+4. **Model pre-download** — runs `ASRModel.from_pretrained()` during the build to cache the model weights inside the image. This avoids a HuggingFace download on every container startup, making deployments faster and more reliable.
+5. **Handler copy** — copies `handler.py` into the image.
 
 **Runtime configuration:**
 
