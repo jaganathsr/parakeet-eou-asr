@@ -44,6 +44,9 @@ ENV TRITON_URL=http://localhost:8000
 
 EXPOSE 8080
 
+# Clear the base image's ENTRYPOINT so our shell-form CMD runs correctly.
+ENTRYPOINT []
+
 # Start Triton in the background, then the compatibility proxy
 CMD tritonserver --model-repository=/models --http-port=8000 --log-verbose=0 & \
     TRITON_PID=$! && \
